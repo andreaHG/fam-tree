@@ -32,7 +32,8 @@ export interface TreeNode {
     mother?: string;
     father?: string;
     rstatus?: string;
-    spouses?: string;
+    // spouses?: string;
+    relationship: string;
   };
   children?: TreeNode[];
 }
@@ -90,21 +91,30 @@ export const formatDataForD3Tree = (data: CSVData[]): TreeNode | null => {
       });
     }
 
-    // Handle spouses as attributes (not as roots or children)
-    // Add spouse if applicable
+    // Add spouses as sibling-like nodes
     if (spouses) {
       const spouseIds =
         typeof spouses === "string"
           ? spouses.split(",").map((id) => id.trim())
           : [String(spouses)];
+      spouseIds.forEach((spouseId) => {
+        if (nodeMap[spouseId] && !currentNode.addedChildren.has(spouseId)) {
+          currentNode.addedChildren.add(spouseId);
 
-      currentNode.attributes = {
-        ...currentNode.attributes,
-        spouses: spouseIds
-          .map((spouseId) => nodeMap[spouseId]?.name || spouseId)
-          .join(", "),
-        rstatus: rstatus,
-      };
+          // Add spouse as a sibling-like node
+          if (currentNode.children) {
+            currentNode.children.push({
+              name: nodeMap[spouseId].name,
+              attributes: {
+                // id: spouseId,
+                rstatus: rstatus || "Married",
+                relationship: "Spouse",
+              },
+              children: [], // Spouses won't have nested children in this layout
+            });
+          }
+        }
+      });
     }
   });
 

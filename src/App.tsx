@@ -6,7 +6,7 @@ import Papa from "papaparse";
 import "./App.css";
 import { TreeNode, CSVData, formatDataForD3Tree } from "./parser";
 import NodeCard from "./components/NodeCard";
-import NodePath from "./components/NodePath";
+import nodePath from "./components/NodePath";
 
 function App() {
   const [treeData, setTreeData] = useState<TreeNode | null>(null); // State to hold the formatted tree data
@@ -59,12 +59,12 @@ function App() {
         draggable
         data={treeData}
         orientation="vertical"
-        nodeSize={{ x: 250, y: 250 }}
+        nodeSize={{ x: 600, y: 300 }}
         renderCustomNodeElement={(rd3tProps) => <NodeCard {...rd3tProps} />}
         // rootNodeClassName="node__root"
         // branchNodeClassName="node__branch"
         // leafNodeClassName="node__leaf"
-        pathFunc={"step"}
+        pathFunc={nodePath}
         pathClassFunc={() => "my-path-class"}
       />
     </div>
