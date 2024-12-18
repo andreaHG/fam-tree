@@ -9,8 +9,8 @@ const NodeCard = ({ nodeDatum }: { nodeDatum: TreeNode }) => {
     <foreignObject
       width={200}
       height={200}
-      x={isSpouse ? -55 : -100} // Slightly adjust spouse position
-      y={isSpouse ? -355 : -55}
+      x={isSpouse ? -550 : -100} // Slightly adjust spouse position
+      y={isSpouse ? -660 : -50}
     >
       <div
         style={{

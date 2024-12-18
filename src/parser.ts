@@ -1,6 +1,5 @@
 import Papa from "papaparse";
-
-// Papa.parse(file, config);
+import { FamilyMember } from "./FamilyTree";
 
 export async function fetchAndParseCSV() {
   const response = await fetch("/assets/fam-tree.csv");
@@ -19,11 +18,12 @@ export async function fetchAndParseCSV() {
 export interface CSVData {
   id: string;
   name: string;
+  gender: string;
   mother?: string;
   father?: string;
   children?: string;
   spouses?: string;
-  rstatus?: string;
+  status?: string;
 }
 
 export interface TreeNode {
@@ -38,98 +38,64 @@ export interface TreeNode {
   children?: TreeNode[];
 }
 
-export const formatDataForD3Tree = (data: CSVData[]): TreeNode | null => {
-  // Standardize nodeMap to use string keys
-  const nodeMap: Record<string, TreeNode & { addedChildren: Set<string> }> = {};
+export function transformToFamilyTreeForChart(
+  parsedData: CSVData[]
+): FamilyMember[] {
+  console.log("parsedData in transformToFamilyTreeForChart", parsedData);
+  return parsedData.map((row) => {
+    // Normalize `children` to always be a string for splitting
+    const childrenString =
+      typeof row.children === "number"
+        ? String(row.children) // Convert single number to string
+        : typeof row.children === "string"
+        ? row.children // Keep string as is
+        : ""; // Default to empty string for null/undefined
 
-  // Initialize nodes
-  data.forEach(({ id, name }) => {
-    const nodeId = String(id); // Ensure id is always a string
-    nodeMap[nodeId] = { name, children: [], addedChildren: new Set() };
+    // Normalize `spouses` to always be a string for splitting
+    const spousesString =
+      typeof row.spouses === "number"
+        ? String(row.spouses)
+        : typeof row.spouses === "string"
+        ? row.spouses
+        : "";
+
+    // console.log("row is:", row);
+
+    // Split children and spouses into arrays, handling empty or undefined cases
+    const childrenArray = childrenString
+      .split(",")
+      .map((id) => parseInt(id.trim()))
+      .filter(Boolean);
+
+    const spousesArray = spousesString
+      .split(",")
+      .map((id) => parseInt(id.trim()))
+      .filter(Boolean);
+
+    // console.log("childrenArray", childrenArray);
+
+    // Parse the first and last name from the full name
+    const [firstName, ...lastNameParts] = row.name.split(" ");
+    const lastName = lastNameParts.join(" ").trim();
+
+    // Create the FamilyMember object
+    const familyMember: FamilyMember = {
+      id: row.id,
+      rels: {
+        spouses: spousesArray.length > 0 ? spousesArray : [],
+        father: row.father ? parseInt(row.father) : undefined,
+        mother: row.mother ? parseInt(row.mother) : undefined,
+        children: childrenArray.length > 0 ? childrenArray : [],
+      },
+      data: {
+        "first name": firstName,
+        "last name": lastName || undefined,
+        gender: row.gender === "M" ? "M" : "F", // Assume "status" determines gender
+        birthday: "",
+        avatar: "",
+      },
+    };
+
+    return familyMember;
   });
-
-  // Establish relationships
-  data.forEach(({ id, mother, father, children, spouses, rstatus }) => {
-    const currentNodeId = String(id); // Standardize id as string
-    const currentNode = nodeMap[currentNodeId];
-
-    // Add to mother if exists and not already added
-    if (mother) {
-      const motherId = String(mother);
-      if (
-        nodeMap[motherId] &&
-        !nodeMap[motherId].addedChildren.has(currentNodeId)
-      ) {
-        nodeMap[motherId].children!.push(currentNode);
-        nodeMap[motherId].addedChildren.add(currentNodeId);
-      }
-    }
-
-    // Add to father if exists and not already added
-    if (father) {
-      const fatherId = String(father);
-      if (
-        nodeMap[fatherId] &&
-        !nodeMap[fatherId].addedChildren.has(currentNodeId)
-      ) {
-        nodeMap[fatherId].children!.push(currentNode);
-        nodeMap[fatherId].addedChildren.add(currentNodeId);
-      }
-    }
-
-    // Add children relationships
-    if (children) {
-      const childIds =
-        typeof children === "string"
-          ? children.split(",").map((id) => id.trim())
-          : [String(children)];
-      childIds.forEach((childId) => {
-        if (nodeMap[childId] && !currentNode.addedChildren.has(childId)) {
-          currentNode.children!.push(nodeMap[childId]);
-          currentNode.addedChildren.add(childId);
-        }
-      });
-    }
-
-    // Add spouses as sibling-like nodes
-    if (spouses) {
-      const spouseIds =
-        typeof spouses === "string"
-          ? spouses.split(",").map((id) => id.trim())
-          : [String(spouses)];
-      spouseIds.forEach((spouseId) => {
-        if (nodeMap[spouseId] && !currentNode.addedChildren.has(spouseId)) {
-          currentNode.addedChildren.add(spouseId);
-
-          // Add spouse as a sibling-like node
-          if (currentNode.children) {
-            currentNode.children.push({
-              name: nodeMap[spouseId].name,
-              attributes: {
-                // id: spouseId,
-                rstatus: rstatus || "Married",
-                relationship: "Spouse",
-              },
-              children: [], // Spouses won't have nested children in this layout
-            });
-          }
-        }
-      });
-    }
-  });
-
-  // Find root node(s)
-  const rootNodes = data
-    .filter(({ mother, father, spouses }) => !mother && !father && !spouses) // Ensure no parent and not just a spouse
-    .map(({ id }) => {
-      const nodeId = String(id);
-      const { addedChildren, ...rest } = nodeMap[nodeId]; // Remove the internal `addedChildren`
-      return rest;
-    });
-
-  console.log("nodeMap", nodeMap);
-  console.log("rootNodes", rootNodes);
-
-  // Return the highest node or null
-  return rootNodes[0] || null;
-};
+}
