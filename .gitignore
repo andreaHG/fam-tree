@@ -24,4 +24,5 @@ dist-ssr
 *.sw?
 
 # hide fam tree csv
-family-tree.csv
+fam-tree.csv
+fam-tree-full.csv
