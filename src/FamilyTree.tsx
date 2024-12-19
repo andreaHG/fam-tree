@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import f3 from "family-chart";
 
 // Define types for the family data
@@ -24,7 +24,7 @@ interface FamilyTreeProps {
   data: FamilyMember[];
 }
 
-const FamilyTree: React.FC<FamilyTreeProps> = ({ data }) => {
+const FamilyTree = ({ data }: FamilyTreeProps) => {
   // console.log("DATA PASSED", data);
   const containerRef = useRef<HTMLDivElement>(null);
 

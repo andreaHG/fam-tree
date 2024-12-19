@@ -13,7 +13,7 @@ function App() {
     // Fetch and parse the CSV file
     const fetchAndParseCSV = async () => {
       try {
-        const response = await fetch("/sample.csv");
+        const response = await fetch("/fam-tree/sample.csv");
         const csvText = await response.text();
 
         // Parse the CSV
