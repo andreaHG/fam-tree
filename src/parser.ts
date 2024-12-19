@@ -1,20 +1,4 @@
-import Papa from "papaparse";
 import { FamilyMember } from "./FamilyTree";
-
-export async function fetchAndParseCSV() {
-  const response = await fetch("/assets/fam-tree.csv");
-  const csvText = await response.text();
-
-  const parsedData = Papa.parse(csvText, {
-    header: true,
-    skipEmptyLines: true,
-    dynamicTyping: true,
-  });
-
-  return parsedData.data;
-}
-
-// Define types for the CSV data and the tree structure
 export interface CSVData {
   id: string;
   name: string;
@@ -24,18 +8,6 @@ export interface CSVData {
   children?: string;
   spouses?: string;
   status?: string;
-}
-
-export interface TreeNode {
-  name: string;
-  attributes?: {
-    mother?: string;
-    father?: string;
-    rstatus?: string;
-    // spouses?: string;
-    relationship: string;
-  };
-  children?: TreeNode[];
 }
 
 export function transformToFamilyTreeForChart(

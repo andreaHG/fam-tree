@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import f3 from "family-chart"; // Import the library
+import f3 from "family-chart";
 
 // Define types for the family data
 export interface FamilyMember {
@@ -25,7 +25,7 @@ interface FamilyTreeProps {
 }
 
 const FamilyTree: React.FC<FamilyTreeProps> = ({ data }) => {
-  console.log("DATA PASSED", data);
+  // console.log("DATA PASSED", data);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,7 +66,7 @@ const FamilyTree: React.FC<FamilyTreeProps> = ({ data }) => {
     });
 
     // Attach the chart logic to the store
-    store.setOnUpdate((props) =>
+    store.setOnUpdate((props: any) =>
       f3.view(store.getTree(), svg, Card, props || {})
     );
 

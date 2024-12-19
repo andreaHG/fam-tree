@@ -13,7 +13,7 @@ function App() {
     // Fetch and parse the CSV file
     const fetchAndParseCSV = async () => {
       try {
-        const response = await fetch("/sample.csv"); // Adjust path if needed
+        const response = await fetch("/sample.csv");
         const csvText = await response.text();
 
         // Parse the CSV
@@ -24,7 +24,6 @@ function App() {
           transformHeader: (header) => header?.toLowerCase(),
         }).data;
 
-        // Format the parsed data for react-d3-tree
         const formattedData = transformToFamilyTreeForChart(parsedData);
         // console.log("parsedData", parsedData);
         // console.log("formattedData", formattedData);
