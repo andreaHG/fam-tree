@@ -1,31 +1,12 @@
 import { useEffect, useRef } from "react";
 import f3 from "family-chart";
+import { FamilyMember } from "../types/familyTree";
 
-// Define types for the family data
-export interface FamilyMember {
-  id: string;
-  //   main: boolean;
-  rels: {
-    spouses?: number[];
-    father?: number;
-    mother?: number;
-    children?: number[];
-  };
-  data: {
-    "first name": string;
-    "last name"?: string;
-    birthday?: string;
-    avatar?: string;
-    gender: "M" | "F";
-  };
-}
-
-interface FamilyTreeProps {
+interface FamilyTreeChartPropsProps {
   data: FamilyMember[];
 }
 
-const FamilyTree = ({ data }: FamilyTreeProps) => {
-  // console.log("DATA PASSED", data);
+const FamilyTreeChartProps = ({ data }: FamilyTreeChartPropsProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -77,4 +58,4 @@ const FamilyTree = ({ data }: FamilyTreeProps) => {
   return <div id="FamilyChart" ref={containerRef} className="f3"></div>;
 };
 
-export default FamilyTree;
+export default FamilyTreeChartProps;

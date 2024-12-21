@@ -1,73 +1,36 @@
-import { FamilyMember } from "./FamilyTree";
-export interface CSVData {
-  id: string;
-  name: string;
-  gender: string;
-  mother?: string;
-  father?: string;
-  children?: string;
-  spouses?: string;
-  status?: string;
-}
+import { FamilyTreeFields } from "./types/airtable";
 
-export function transformToFamilyTreeForChart(
-  parsedData: CSVData[]
-): FamilyMember[] {
-  console.log("parsedData in transformToFamilyTreeForChart", parsedData);
-  return parsedData.map((row) => {
-    // Normalize `children` to always be a string for splitting
-    const childrenString =
-      typeof row.children === "number"
-        ? String(row.children) // Convert single number to string
-        : typeof row.children === "string"
-        ? row.children // Keep string as is
-        : ""; // Default to empty string for null/undefined
+export const getMappedFamilyMembers = (results: FamilyTreeFields[]) => {
+  return results.map((field) => {
+    // const field = record.fields as FamilyTreeFields;
+    // Utility function to safely parse a comma-separated string into an array of numbers
+    const parseIDs = (field?: string | null): number[] => {
+      return field
+        ? field
+            .split(",")
+            .map((id) => parseInt(id.trim()))
+            .filter(Boolean)
+        : [];
+    };
 
-    // Normalize `spouses` to always be a string for splitting
-    const spousesString =
-      typeof row.spouses === "number"
-        ? String(row.spouses)
-        : typeof row.spouses === "string"
-        ? row.spouses
-        : "";
-
-    // console.log("row is:", row);
-
-    // Split children and spouses into arrays, handling empty or undefined cases
-    const childrenArray = childrenString
-      .split(",")
-      .map((id) => parseInt(id.trim()))
-      .filter(Boolean);
-
-    const spousesArray = spousesString
-      .split(",")
-      .map((id) => parseInt(id.trim()))
-      .filter(Boolean);
-
-    // console.log("childrenArray", childrenArray);
-
-    // Parse the first and last name from the full name
-    const [firstName, ...lastNameParts] = row.name.split(" ");
+    const [firstName, ...lastNameParts] = field.NAME.split(" ");
     const lastName = lastNameParts.join(" ").trim();
 
-    // Create the FamilyMember object
-    const familyMember: FamilyMember = {
-      id: row.id,
+    return {
+      id: field.ID,
       rels: {
-        spouses: spousesArray.length > 0 ? spousesArray : [],
-        father: row.father ? parseInt(row.father) : undefined,
-        mother: row.mother ? parseInt(row.mother) : undefined,
-        children: childrenArray.length > 0 ? childrenArray : [],
+        father: field.FATHER || undefined,
+        mother: field.MOTHER || undefined,
+        spouses: parseIDs(field.SPOUSES),
+        children: parseIDs(field.CHILDREN),
       },
       data: {
         "first name": firstName,
         "last name": lastName || undefined,
-        gender: row.gender === "M" ? "M" : "F", // Assume "status" determines gender
+        gender: field.GENDER,
         birthday: "",
         avatar: "",
       },
     };
-
-    return familyMember;
   });
-}
+};

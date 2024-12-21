@@ -23,6 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# hide fam tree csv
-fam-tree.csv
-fam-tree-full.csv
+
+# env
+.env

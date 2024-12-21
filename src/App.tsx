@@ -1,60 +1,37 @@
-import { useEffect, useState } from "react";
-import Papa from "papaparse";
-
 import "./App.css";
-import { CSVData, transformToFamilyTreeForChart } from "./parser";
-import FamilyTree, { FamilyMember } from "./FamilyTree";
+import FamilyTreePage from "./pages/FamilyTreePage";
+import { LoginForm } from "./components/LoginForm";
+import AnimatedGridPattern from "./components/ui/animated-grid-pattern";
+import { cn } from "./lib/utils";
+import HyperText from "./components/ui/hyper-text";
+import useAuth from "./hooks/useAuth";
 
 function App() {
-  const [treeData, setTreeData] = useState<FamilyMember[] | null>(null); // State to hold the formatted tree data
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Fetch and parse the CSV file
-    const fetchAndParseCSV = async () => {
-      try {
-        const response = await fetch("/fam-tree/sample.csv");
-        const csvText = await response.text();
-
-        // Parse the CSV
-        const parsedData = Papa.parse<CSVData>(csvText, {
-          header: true,
-          skipEmptyLines: true,
-          dynamicTyping: true,
-          transformHeader: (header) => header?.toLowerCase(),
-        }).data;
-
-        const formattedData = transformToFamilyTreeForChart(parsedData);
-        // console.log("parsedData", parsedData);
-        // console.log("formattedData", formattedData);
-
-        setTreeData(formattedData); // Set the formatted data to state
-      } catch (error) {
-        console.error("Error fetching or parsing CSV:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAndParseCSV();
-  }, []);
-
-  // Render loading state or tree
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (!treeData) {
-    return <p>No data available</p>;
-  }
+  const { isAuthenticated } = useAuth();
 
   return (
-    <>
-      <div>
-        <h1>Family Tree V1</h1>
-      </div>
-      <FamilyTree data={treeData} />
-    </>
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+      <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+        <HyperText>Family Tree V1</HyperText>
+      </h1>
+      {!isAuthenticated ? (
+        <div className="max-w-sm">
+          <LoginForm />
+        </div>
+      ) : (
+        <FamilyTreePage />
+      )}
+      <AnimatedGridPattern
+        numSquares={30}
+        maxOpacity={0.1}
+        duration={3}
+        repeatDelay={1}
+        className={cn(
+          "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
+          "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
+        )}
+      />
+    </div>
   );
 }
 
